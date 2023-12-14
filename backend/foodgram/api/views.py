@@ -8,7 +8,6 @@ from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-
 from .serializers import (FollowSerializer, IngredientSerializer,
                           NewPasswordSerializer, RecipeBaseSerializer,
                           RecipeCreateSerializer, RecipeGetSerializer,
