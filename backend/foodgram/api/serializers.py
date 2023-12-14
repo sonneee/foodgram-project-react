@@ -1,12 +1,14 @@
-from django.contrib.auth import get_user_model
-from rest_framework import serializers
 import base64
-from django.db.models import F
+
+from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
+from django.db.models import F
+from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from recipes.models import (Recipe, Ingredient,
-                            Tag, IngredientRecipe,
-                            Favorite, ShoppingCart, Follow)
+
+from recipes.models import (Favorite, Follow, Ingredient,
+                            IngredientRecipe, Recipe,
+                            ShoppingCart, Tag)
 
 User = get_user_model()
 
@@ -224,10 +226,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                                        )
         recipe.tags.set(tags)
         ingredients_recipe = [IngredientRecipe(
-                ingredient=Ingredient.objects.get(id=ingredient['id']),
-                recipe=recipe,
-                amount=ingredient['amount']
-            ) for ingredient in ingredients]
+            ingredient=Ingredient.objects.get(id=ingredient['id']),
+            recipe=recipe,
+            amount=ingredient['amount']) for ingredient in ingredients]
         IngredientRecipe.objects.bulk_create(ingredients_recipe)
         return recipe
 
@@ -250,10 +251,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         instance.tags.set(tags)
         instance.ingredients.clear()
         ingredients_recipe = [IngredientRecipe(
-                ingredient=Ingredient.objects.get(id=ingredient['id']),
-                recipe=instance,
-                amount=ingredient['amount']
-            ) for ingredient in ingredients]
+            ingredient=Ingredient.objects.get(id=ingredient['id']),
+            recipe=instance,
+            amount=ingredient['amount']) for ingredient in ingredients]
         IngredientRecipe.objects.bulk_create(ingredients_recipe)
         instance.save()
         return instance

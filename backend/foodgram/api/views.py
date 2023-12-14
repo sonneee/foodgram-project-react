@@ -1,27 +1,24 @@
-
-from django.db.models import Sum
 from django.contrib.auth import get_user_model
-from django_filters.rest_framework import DjangoFilterBackend
-from django.shortcuts import get_object_or_404
+from django.db.models import Sum
 from django.http.response import HttpResponse
-
-from rest_framework import status, viewsets, views, permissions
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import permissions, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
-from recipes.models import (Follow, Recipe, Favorite,
-                            ShoppingCart, Ingredient, Tag, IngredientRecipe)
-from core.filters import RecipeFilter, IngredientFilter
+from .serializers import (FollowSerializer, IngredientSerializer,
+                          NewPasswordSerializer, RecipeBaseSerializer,
+                          RecipeCreateSerializer, RecipeGetSerializer,
+                          TagSerializer, UserSerializer,
+                          UserSignUpSerializer)
+from core.filters import IngredientFilter, RecipeFilter
 from core.pagination import PageNumberLimitPagination
 from core.permissions import IsAuthorOrReadOnly
-from .serializers import (UserSerializer, NewPasswordSerializer,
-                          RecipeGetSerializer, RecipeCreateSerializer,
-                          RecipeBaseSerializer, FollowSerializer,
-                          IngredientSerializer, TagSerializer,
-                          UserSignUpSerializer)
-
+from recipes.models import (Favorite, Follow, Ingredient, IngredientRecipe,
+                            Recipe, ShoppingCart, Tag)
 
 User = get_user_model()
 
@@ -121,9 +118,9 @@ class TokenLoginViewSet(views.APIView):
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
-        if (not email or not password or not User.objects.filter(
-                                         email=email,
-                                         password=password).exists()):
+        if (not email) or (not password) or (not User.objects.filter(
+                                             email=email,
+                                             password=password).exists()):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         user = get_object_or_404(User, email=email)
         token = AccessToken.for_user(user)

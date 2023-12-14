@@ -1,10 +1,10 @@
 import csv
 import os
 
-from foodgram import settings
-
 from django.core.management.base import BaseCommand
 from recipes.models import Ingredient, Tag
+
+from foodgram import settings
 
 
 def create_ingridient(text):

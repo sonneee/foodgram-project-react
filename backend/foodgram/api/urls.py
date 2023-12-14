@@ -1,10 +1,10 @@
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
-from .views import (UserViewSet, UserMeViewSet,
-                    NewPasswordViewSet, TagViewSet,
-                    RecipeViewSet, IngredientViewSet,
-                    TokenLoginViewSet, TokenLogoutViewSet)
+from .views import (IngredientViewSet, NewPasswordViewSet,
+                    RecipeViewSet, TagViewSet,
+                    TokenLoginViewSet, TokenLogoutViewSet,
+                    UserMeViewSet, UserViewSet)
 
 router = SimpleRouter()
 
@@ -23,5 +23,5 @@ urlpatterns = [
     })),
     path('', include(router.urls)),
     path('auth/token/login/', TokenLoginViewSet.as_view()),
-    path('auth/token/logout/',  TokenLogoutViewSet.as_view())
+    path('auth/token/logout/', TokenLogoutViewSet.as_view())
 ]
