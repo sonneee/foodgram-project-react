@@ -67,7 +67,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({"errors": "Вы не подписаны на этого автора"},
                             status=status.HTTP_400_BAD_REQUEST)
 
-    @action(methods=['get',],
+    @action(methods=['get', ],
             permission_classes=(permissions.IsAuthenticated,), detail=False,
             pagination_class=PageNumberLimitPagination)
     def subscriptions(self, request):
@@ -80,7 +80,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class UserMeViewSet(viewsets.ModelViewSet):
-    http_method_names = ['get',]
+    http_method_names = ['get', ]
     permission_classes = (permissions.IsAuthenticated,)
 
     def retrieve(self, request):
@@ -91,7 +91,7 @@ class UserMeViewSet(viewsets.ModelViewSet):
 
 
 class NewPasswordViewSet(viewsets.ModelViewSet):
-    http_method_names = ['post',]
+    http_method_names = ['post', ]
     permission_classes = (permissions.IsAuthenticated,)
 
     def create(self, request):
@@ -112,7 +112,7 @@ class NewPasswordViewSet(viewsets.ModelViewSet):
 
 
 class TokenLoginViewSet(views.APIView):
-    http_method_names = ['post',]
+    http_method_names = ['post', ]
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
@@ -129,7 +129,7 @@ class TokenLoginViewSet(views.APIView):
 
 
 class TokenLogoutViewSet(views.APIView):
-    http_method_names = ['post',]
+    http_method_names = ['post', ]
 
     def post(self, request):
         user = request.user
@@ -253,7 +253,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 class IngredientViewSet(viewsets.ModelViewSet):
     pagination_class = None
-    http_method_names = ['get',]
+    http_method_names = ['get', ]
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     filterset_class = IngredientFilter

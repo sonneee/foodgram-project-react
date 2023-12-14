@@ -28,7 +28,7 @@ class Ingredient(models.Model):
 class Recipe(models.Model):
     name = models.CharField(max_length=200, verbose_name='Название')
     text = models.TextField(verbose_name='Описание')
-    cooking_time = models.IntegerField(validators=[MinValueValidator(1),],
+    cooking_time = models.IntegerField(validators=[MinValueValidator(1), ],
                                        verbose_name='Время приготовления')
     author = models.ForeignKey(
         User,
@@ -61,7 +61,7 @@ class IngredientRecipe(models.Model):
                                    on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, related_name='ingredientrecipe',
                                on_delete=models.CASCADE)
-    amount = models.IntegerField(validators=[MinValueValidator(1),],
+    amount = models.IntegerField(validators=[MinValueValidator(1), ],
                                  verbose_name='Количество')
 
 
