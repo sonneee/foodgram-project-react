@@ -10,6 +10,8 @@ from recipes.models import (Favorite, Follow, Ingredient,
                             IngredientRecipe, Recipe,
                             ShoppingCart, Tag)
 
+MAX_LENGTH = 150
+
 User = get_user_model()
 
 
@@ -51,15 +53,16 @@ class UserSignUpSerializer(serializers.ModelSerializer):
 
 
 class NewPasswordSerializer(serializers.BaseSerializer):
-    new_password = serializers.CharField(max_length=150, required=True)
-    current_password = serializers.CharField(max_length=150, required=True)
+    new_password = serializers.CharField(max_length=MAX_LENGTH, required=True)
+    current_password = serializers.CharField(max_length=MAX_LENGTH,
+                                             required=True)
 
     def validate_new_password(self, data):
         new_password = data.get('new_password')
         errors = {}
         if not new_password:
             errors['new_password'] = ['Обязательное поле']
-        elif len(new_password) > 150:
+        elif len(new_password) > MAX_LENGTH:
             errors['new_password'] = ['Пароль не должен быть длиннее '
                                       '150 символов']
         return errors
@@ -69,7 +72,7 @@ class NewPasswordSerializer(serializers.BaseSerializer):
         errors = {}
         if not current_password:
             errors['current_password'] = ['Обязательное поле']
-        elif len(current_password) > 150:
+        elif len(current_password) > MAX_LENGTH:
             errors['current_password'] = ['Пароль не должен быть длиннее '
                                           '150 символов']
         return errors
@@ -80,9 +83,8 @@ class NewPasswordSerializer(serializers.BaseSerializer):
                 'new_password': ['Обязательное поле'],
                 'current_password': ['Обязательное поле']
             })
-        errors = {}
-        errors.update(self.validate_new_password(data))
-        errors.update(self.validate_current_password(data))
+        errors = {**self.validate_new_password(data),
+                  **self.validate_current_password(data)}
         if errors:
             raise serializers.ValidationError(errors)
 
@@ -178,6 +180,19 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         fields = ('id', 'ingredients', 'tags', 'image', 'name', 'text',
                   'author', 'cooking_time')
 
+    def validate_cooking_time(self, data):
+        cooking_time = data
+        errors = {}
+        if not cooking_time:
+            errors['cooking_time'] = ['Обязательное поле']
+        elif cooking_time > 10000:
+            errors['cooking_time'] = ['Задано слишком большое значение']
+        elif cooking_time < 1:
+            errors['cooking_time'] = ['Задано слишком маленькое значение']
+        if errors:
+            raise serializers.ValidationError(errors)
+        return data
+
     def validate_ingredients(self, data):
         ingredients = data
         errors = {}
@@ -187,14 +202,16 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             ingr_ids = {}
             for ingredient in ingredients:
                 id_now = ingredient['id']
-                if not Ingredient.objects.filter(id=id_now).exists():
-                    errors['ingredients'] = ['Указан несуществующий '
-                                             'ингредиент']
                 if ingr_ids.get(id_now):
                     errors['ingredients'] = ['Ингредиенты не должны '
                                              'повторяться']
                 else:
                     ingr_ids[id_now] = 1
+            ingr_in_base = Ingredient.objects.filter(
+                id__in=ingr_ids.keys()).count()
+            if ingr_in_base != len(ingr_ids):
+                errors['ingredients'] = ['Указан несуществующий '
+                                         'ингредиент']
         if errors:
             raise serializers.ValidationError(errors)
         return data
@@ -205,11 +222,14 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         if not tags:
             errors['tags'] = ['Обязательное поле']
         else:
+            tag_ids = []
             for tag in tags:
-                if not Tag.objects.filter(id=tag.id).exists():
-                    errors['tags'] = ['Указан несуществующий тег']
+                tag_ids.append(tag.id)
             if len(list(tags)) != len(set(tags)):
                 errors['tags'] = ['Теги не должны повторяться']
+            tag_count = Tag.objects.filter(id__in=tag_ids).count()
+            if tag_count != len(set(tags)):
+                errors['tags'] = ['Указан несуществующий тег']
         if errors:
             raise serializers.ValidationError(errors)
         return data
@@ -217,13 +237,12 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         tags = validated_data.get('tags')
         ingredients = validated_data.get('ingredients')
-        recipe = Recipe.objects.create(**{'name': validated_data.get('name'),
-                                          'text': validated_data.get('text'),
-                                          'author': validated_data.get('user'),
-                                          'cooking_time':
-                                          validated_data.get('cooking_time'),
-                                          'image': validated_data.get('image')}
-                                       )
+        recipe = Recipe.objects.create(name=validated_data.get('name'),
+                                       text=validated_data.get('text'),
+                                       author=validated_data.get('user'),
+                                       cooking_time=validated_data.get(
+                                           'cooking_time'),
+                                       image=validated_data.get('image'))
         recipe.tags.set(tags)
         ingredients_recipe = [IngredientRecipe(
             ingredient=Ingredient.objects.get(id=ingredient['id']),

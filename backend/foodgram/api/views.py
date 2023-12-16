@@ -59,10 +59,9 @@ class UserViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
-            subscription = Follow.objects.filter(author=author,
-                                                 user=user)
-            if subscription.exists():
-                subscription.delete()
+            deleted = Follow.objects.filter(author=author,
+                                            user=user).delete()
+            if deleted[0] > 0:
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response({"errors": "Вы не подписаны на этого автора"},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -118,9 +117,9 @@ class TokenLoginViewSet(views.APIView):
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
-        if (not email) or (not password) or (not User.objects.filter(
-                                             email=email,
-                                             password=password).exists()):
+        if not email or not password or (not User.objects.filter(
+                                         email=email,
+                                         password=password).exists()):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         user = get_object_or_404(User, email=email)
         token = AccessToken.for_user(user)
@@ -139,7 +138,9 @@ class TokenLogoutViewSet(views.APIView):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
-    queryset = Recipe.objects.all()
+    queryset = Recipe.objects.prefetch_related('tags',
+                                               'author',
+                                               'ingredients')
     pagination_class = PageNumberLimitPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
@@ -171,16 +172,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     return Response({"errors":
                                      "Рецепт уже добавлен в избранное"},
                                     status=status.HTTP_400_BAD_REQUEST)
-                favorite = Favorite(user=user, recipe=recipe)
-                favorite.save()
+                Favorite.objects.create(user=user, recipe=recipe)
                 return Response(serializer.data,
                                 status=status.HTTP_201_CREATED)
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
         if request.method == 'DELETE':
-            is_favorited = Favorite.objects.filter(user=user, recipe=recipe)
-            if is_favorited.exists():
-                is_favorited.delete()
+            deleted = Favorite.objects.filter(user=user,
+                                              recipe=recipe).delete()
+            if deleted[0] > 0:
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response({"errors": "Рецепт не был добавлен в избранное"},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -203,17 +203,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     return Response({"errors":
                                      "Рецепт уже добавлен в список покупок"},
                                     status=status.HTTP_400_BAD_REQUEST)
-                shopping_cart = ShoppingCart(user=user, recipe=recipe)
-                shopping_cart.save()
+                ShoppingCart.objects.create(user=user, recipe=recipe)
                 return Response(serializer.data,
                                 status=status.HTTP_201_CREATED)
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
         if request.method == 'DELETE':
-            is_in_shopping_cart = ShoppingCart.objects.filter(user=user,
-                                                              recipe=recipe)
-            if is_in_shopping_cart.exists():
-                is_in_shopping_cart.delete()
+            deleted = ShoppingCart.objects.filter(user=user,
+                                                  recipe=recipe).delete()
+            if deleted[0] > 0:
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response({"errors": "Рецепт отсутствует в списке покупок"},
                             status=status.HTTP_400_BAD_REQUEST)

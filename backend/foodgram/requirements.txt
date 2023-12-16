@@ -7,12 +7,14 @@ coreschema==0.0.4
 cryptography==41.0.7
 defusedxml==0.8.0rc2
 Django==3.2.16
+django-colorfield==0.11.0
 django-cors-headers==3.13.0
 django-filter==23.5
 django-templated-mail==1.1.1
 djangorestframework==3.12.4
 djangorestframework-simplejwt==4.7.2
 djoser==2.1.0
+flake8==6.0.0
 idna==3.6
 itypes==1.2.0
 Jinja2==3.1.2
@@ -34,4 +36,3 @@ sqlparse==0.4.4
 typing_extensions==4.8.0
 uritemplate==4.1.1
 urllib3==2.1.0
-flake8==6.0.0

@@ -2,22 +2,23 @@ import csv
 import os
 
 from django.core.management.base import BaseCommand
+
 from recipes.models import Ingredient, Tag
 from foodgram import settings
 
 
-def create_ingridient(text):
+def create_ingridient(name, measure):
     Ingredient.objects.get_or_create(
-        name=text[0],
-        measurement_unit=text[1]
+        name=name,
+        measurement_unit=measure
     )
 
 
-def create_tag(text):
+def create_tag(name, color, slug):
     Tag.objects.get_or_create(
-        name=text[0],
-        color=text[1],
-        slug=text[2]
+        name=name,
+        color=color,
+        slug=slug
     )
 
 
@@ -36,8 +37,8 @@ class Command(BaseCommand):
             with table:
                 counter = 0
                 reader = csv.reader(table)
-                for row in reader:
-                    create_ingridient(row)
+                for name, measure in reader:
+                    create_ingridient(name, measure)
                     counter += 1
             self.stdout.write(
                 self.style.SUCCESS('%s ingridients loaded to db' % counter)
@@ -50,8 +51,8 @@ class Command(BaseCommand):
             with table:
                 counter = 0
                 reader = csv.reader(table)
-                for row in reader:
-                    create_tag(row)
+                for name, color, slug in reader:
+                    create_tag(name, color, slug)
                     counter += 1
             self.stdout.write(
                 self.style.SUCCESS('%s tags loaded to db' % counter)
