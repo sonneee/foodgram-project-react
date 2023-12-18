@@ -19,6 +19,9 @@ class Tag(models.Model):
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
 
+    def __str__(self):
+        return self.name
+
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=200, verbose_name='Название')
@@ -28,6 +31,9 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
+
+    def __str__(self):
+        return self.name
 
 
 class Recipe(models.Model):
@@ -61,6 +67,9 @@ class Recipe(models.Model):
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
+    def __str__(self):
+        return self.name
+
 
 class IngredientRecipe(models.Model):
     ingredient = models.ForeignKey(Ingredient, related_name='recping',
@@ -70,6 +79,13 @@ class IngredientRecipe(models.Model):
     amount = models.IntegerField(validators=[MinValueValidator(MIN_VAL),
                                              MaxValueValidator(MAX_VAL)],
                                  verbose_name='Количество')
+
+    class Meta:
+        verbose_name = 'Связь Ингредиент-Рецепт'
+        verbose_name_plural = 'Связи Ингредиент-Рецепт'
+
+    def __str__(self):
+        return f'{self.ingredient}-{self.recipe}'
 
 
 class Follow(models.Model):
@@ -94,6 +110,9 @@ class Follow(models.Model):
                                     name='unique_follow'),
         ]
 
+    def __str__(self):
+        return f'{self.user} подписан на {self.author}'
+
 
 class Favorite(models.Model):
     user = models.ForeignKey(
@@ -117,6 +136,9 @@ class Favorite(models.Model):
                                     name='unique_favorite'),
         ]
 
+    def __str__(self):
+        return f'{self.recipe} в избранном у {self.user}'
+
 
 class ShoppingCart(models.Model):
     user = models.ForeignKey(
@@ -139,3 +161,6 @@ class ShoppingCart(models.Model):
             models.UniqueConstraint(fields=('user', 'recipe'),
                                     name='unique_shopping_cart'),
         ]
+
+    def __str__(self):
+        return f'{self.recipe} в списке покупок у {self.user}'
